@@ -2,15 +2,17 @@ from pyspark import SparkContext, SparkConf
 import sys
 import random
 import math
-import utils
 import types
 import copy
 import scipy
 import numpy as np
 import LBFGS
 
-from utils import Instance
 from LBFGS import LBFGS
+sys.path.append("../utils/")
+import utils
+
+from utils import Instance
 
 def calc_ins_gradient(ins,broadcast_weights):
     grad = []
@@ -144,7 +146,7 @@ class LBFGS_train:
     def train(self):
 
         #self.load_ins_feat("hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/part-00051", \
-        self.load_ins_feat("hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/part-*", \
+        self.load_ins_feat("hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/part-*51", \
                 "hdfs://hqz-ubuntu-master:9000/data/filtered_ins/eval/*", \
                 "hdfs://hqz-ubuntu-master:9000/data/filtered_feat/*")
 

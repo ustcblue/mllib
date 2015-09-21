@@ -2,6 +2,8 @@ from pyspark import SparkContext, SparkConf
 import sys
 import random
 import math
+
+sys.path.append("../utils/")
 import utils
 
 from utils import Instance
@@ -38,7 +40,7 @@ def train(sc):
     THETA = 4
     SAMPLING_RATE = 0.01
 
-    [train_ins,train_ins_count] = utils.load_ins(sc,"hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/*")
+    [train_ins,train_ins_count] = utils.load_ins(sc,"hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/*51")
     
     [eval_ins,eval_ins_count] = utils.load_ins(sc,"hdfs://hqz-ubuntu-master:9000/data/filtered_ins/eval/*")
 
@@ -59,7 +61,7 @@ def train(sc):
 
         [auc, mae, loss] = utils.get_eval_stat(eval_res)
         
-        utils.output(cur_iter, None, feat_weight,eval_res)
+        #utils.output(cur_iter, None, feat_weight,eval_res)
         
         print ("selected %d samples: auc :%f, mae: %f" % (accum.value,auc,mae))
 
