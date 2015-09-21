@@ -57,7 +57,7 @@ def train(sc):
 
         eval_res = eval_ins.map(lambda ins: ( ins.predict(feat_weight), ins.label)).sortByKey().collect()
 
-        [auc, mae] = utils.get_eval_stat(eval_res)
+        [auc, mae, loss] = utils.get_eval_stat(eval_res)
         
         utils.output(cur_iter, None, feat_weight,eval_res)
         

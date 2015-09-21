@@ -64,7 +64,7 @@ def train(sc):
 
         eval_res = eval_ins.map(lambda ins:utils.evalulate_map(ins,broadcast_feat) ).sortByKey().collect()
 
-        [auc, mae] = utils.get_eval_stat(eval_res)
+        [auc, mae, loss] = utils.get_eval_stat(eval_res)
         
         utils.output(cur_iter, None, broadcast_feat.value,eval_res)
         

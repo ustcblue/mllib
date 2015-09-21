@@ -1,5 +1,4 @@
 import math
-
 from pyspark import SparkContext, SparkConf
 from pyspark import AccumulatorParam
 
@@ -15,7 +14,6 @@ class WeightAccumulatorParam(AccumulatorParam):
                 v1[k] += v2[k]
 
         return v1
-
 
 class Instance:
     label = None
@@ -57,12 +55,23 @@ def load_ins(sc,url):
     
     return [ins,ins_count]
 
+def load_feat(sc,url):
+    featFile=sc.textFile(url)
+    feat = featFile.map(lambda s: int(s)).collect()
+
+    feat_count = len(feat)
+    feat_dict = {}
+
+    for i in range(0,feat_count):
+        feat_dict[feat[i]] = i
+
+    return feat_dict
+
 def evalulate_map(ins,broadcast_feat):
 
     feat_weight = broadcast_feat.value
 
     return (ins.predict(feat_weight),ins.label)
-
 
 def get_eval_stat(sorted_res):
     auc = 0
@@ -77,28 +86,33 @@ def get_eval_stat(sorted_res):
     N = 0
     
     count = len(sorted_res)
+    
+    loss = 0
 
     while idx < count:
         mae += math.fabs(sorted_res[idx][1] - sorted_res[idx][0])
         
         if sorted_res[idx][1] == 0:
+            loss += - math.log(1-sorted_res[idx][0])
+
             N = N + 1
         elif sorted_res[idx][1] == 1:
+            loss += - math.log(sorted_res[idx][0])
             M = M + 1
             rank = rank + idx + 1
-        
+            
         idx += 1
 
     mae = mae / count
 
     auc = (rank*1.0 - M*(M+1)/2.0) / ( M * N * 1.0 )
     
-    return [ auc, mae ] 
+    return [ auc, mae,loss ] 
 
 def output(iter_idx, grad, feat_weight,eval_res):
 
     if grad != None:
-        grad_file_name = "grad_%d" % iter_idx
+        grad_file_name = "weight/grad_%d" % iter_idx
     
         grad_file = open(grad_file_name,"w")
 
@@ -123,5 +137,3 @@ def output(iter_idx, grad, feat_weight,eval_res):
     for e in eval_res:
         eval_file.write("%f\t%d\n" % (e[0],e[1]))
     eval_file.close()
-
-
