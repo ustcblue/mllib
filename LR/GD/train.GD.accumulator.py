@@ -40,7 +40,7 @@ def train(sc):
     THETA = 4
     SAMPLING_RATE = 0.01
 
-    [train_ins,train_ins_count] = utils.load_ins(sc,"hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/*51")
+    [train_ins,train_ins_count] = utils.load_ins(sc,"hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/*")
     
     [eval_ins,eval_ins_count] = utils.load_ins(sc,"hdfs://hqz-ubuntu-master:9000/data/filtered_ins/eval/*")
 

@@ -5,6 +5,8 @@ import math
 import scipy
 import numpy as np
 from scipy import sparse
+
+sys.path.append("../utils/")
 from Mcsrch import Mcsrch
 '''
 

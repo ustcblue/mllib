@@ -18,6 +18,7 @@ class WeightAccumulatorParam(AccumulatorParam):
 class Instance:
     label = None
     feat = None
+    pred_val = None
 
     def __init__(self,line):
 
@@ -27,12 +28,18 @@ class Instance:
         
         self.feat = []
         
+        self.pred_val = -1
+
         for s in segs:
             s_s = s.split(":")
             if len(s_s) == 2:
                 self.feat.append(eval(s_s[0]))
 
-    def predict(self,weights):
+    def predict(self,weights,cache = 0):
+
+        if cache == 1 and self.pred_val > -1:
+            return self.pred_val
+
         weighted_sum = 0
     
         for f in self.feat:
@@ -40,12 +47,13 @@ class Instance:
                 weighted_sum += weights[f]
 
         if weighted_sum >= 30:
-            return 1.0
+            self.pred_val = 1.0
         elif weighted_sum <= -30:
-            return 0.0
+            self.pred_val = 0.0
         else:
-            return 1.0 / (1+math.exp(-weighted_sum))
+            self.pred_val = 1.0 / (1+math.exp(-weighted_sum))
 
+        return self.pred_val
 
 
 def load_ins(sc,url):

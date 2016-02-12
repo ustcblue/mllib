@@ -16,7 +16,7 @@ from utils import Instance
 
 def calc_ins_gradient(ins,broadcast_weights):
     grad = []
-    pred = ins.predict(broadcast_weights.value)
+    pred = ins.predict(broadcast_weights.value, 1)
     
     for f in ins.feat:
         grad.append((f,(pred - ins.label)))
@@ -24,7 +24,7 @@ def calc_ins_gradient(ins,broadcast_weights):
     return grad
 
 def eval_ins_map(ins,broadcast_weights):
-    return ( ins.predict(broadcast_weights.value), ins.label)
+    return ( ins.predict(broadcast_weights.value, 0), ins.label )
 
 
 class LBFGS_train:
@@ -67,7 +67,31 @@ class LBFGS_train:
         self.feat_dict = utils.load_feat(self.sc,feat_file)
         self.feat_weight = [0.0] * len(self.feat_dict)
 
-    def lossFunc_loss(self,x):
+    def lossFunc_loss(self,x,broadcast_feat):
+
+        eval_res = self.train_ins.map(lambda ins: eval_ins_map(ins,broadcast_feat)).sortByKey().collect()
+        
+        [auc,mae,ins_loss] = utils.get_eval_stat(eval_res)
+
+        loss = (ins_loss + self.theta / 2 * ((x.T * x)[0,0])) / self.train_ins_count
+        
+        return loss
+
+    def lossFunc_gradient(self,x,broadcast_feat):
+        
+        ins_grad = self.train_ins.flatMap(lambda ins: calc_ins_gradient(ins, broadcast_feat)).reduceByKey(lambda a,b: a+b).collect()
+        
+        grad_mat = scipy.mat(np.zeros((len(self.feat_dict),1)))
+        #norm_mat = scipy.mat(np.zeros((len(self.feat_dict),1)))
+
+        for f in ins_grad:
+            feat_idx=self.feat_dict[f[0]]
+            grad_mat[feat_idx,0] = f[1] / self.train_ins_count
+        
+        return grad_mat + self.theta / self.train_ins_count * x
+
+    def eval_func_for_train_set(self,x):
+        
         weight_dict={}
 
         #translating feature matrix to a python dictionary
@@ -81,39 +105,7 @@ class LBFGS_train:
 
         eval_res = self.train_ins.map(lambda ins: eval_ins_map(ins,broadcast_feat)).sortByKey().collect()
         
-        [auc,mae,ins_loss] = utils.get_eval_stat(eval_res)
-
-        loss = (ins_loss + self.theta / 2 * ((x.T * x)[0,0])) / self.train_ins_count
-        
-        return loss
-
-    def lossFunc_gradient(self,x):
-        
-        weight_dict={}
-
-        #translating feature matrix to a python dictionary
-        for feat in self.feat_dict:
-            idx = self.feat_dict[feat]
-            if x[idx,0] != 0:
-                weight_dict[feat] = x[idx,0]
-
-        #broadcast the feature weight and calculate the gradient distributely
-        broadcast_feat = self.sc.broadcast(weight_dict)
-        
-        ins_grad = self.train_ins.flatMap(lambda ins: calc_ins_gradient(ins, broadcast_feat)).reduceByKey(lambda a,b: a+b).collect()
-        
-        grad_mat = scipy.mat(np.zeros((len(self.feat_dict),1)))
-        norm_mat = scipy.mat(np.zeros((len(self.feat_dict),1)))
-
-        for f in ins_grad:
-            feat_idx=self.feat_dict[f[0]]
-            grad_mat[feat_idx,0] = f[1] / self.train_ins_count
-        
-        return grad_mat + self.theta / self.train_ins_count * x
-
-    def eval_func_for_train_set(self,x):
-
-        return [self.lossFunc_loss(x),self.lossFunc_gradient(x)]
+        return [self.lossFunc_loss(x,broadcast_feat),self.lossFunc_gradient(x,broadcast_feat)]
 
     def select_mini_batch(self):
         
