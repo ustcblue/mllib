@@ -103,9 +103,10 @@ class LBFGS_train:
         #broadcast the feature weight and calculate the gradient distributely
         broadcast_feat = self.sc.broadcast(weight_dict)
 
-        eval_res = self.train_ins.map(lambda ins: eval_ins_map(ins,broadcast_feat)).sortByKey().collect()
+        loss = self.lossFunc_loss(x,broadcast_feat)
+        loss_grad = self.lossFunc_gradient(x,broadcast_feat)
         
-        return [self.lossFunc_loss(x,broadcast_feat),self.lossFunc_gradient(x,broadcast_feat)]
+        return [loss, loss_grad]
 
     def select_mini_batch(self):
         
