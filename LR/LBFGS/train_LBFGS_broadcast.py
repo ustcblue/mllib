@@ -139,7 +139,7 @@ class LBFGS_train:
     def train(self):
 
         #self.load_ins_feat("hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/part-00051", \
-        self.load_ins_feat("hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/part-*51", \
+        self.load_ins_feat("hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/part-*", \
                 "hdfs://hqz-ubuntu-master:9000/data/filtered_ins/eval/*", \
                 "hdfs://hqz-ubuntu-master:9000/data/filtered_feat/*")
 

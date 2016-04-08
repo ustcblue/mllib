@@ -79,7 +79,7 @@ class Mcsrch:
             print "The search direction is not a descent direction"
             str = raw_input("press any key to continue: ");
             return
-        
+
         self.brackt[0] = False
         self.stage1 = True
         

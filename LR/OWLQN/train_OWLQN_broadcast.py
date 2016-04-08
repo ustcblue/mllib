@@ -144,6 +144,7 @@ class OWLQN_train:
 if __name__ == "__main__":
 
     conf = SparkConf().setAppName("LR_OWLQN")
+    conf.set('spark.kryoserializer.buffer.max','512')
     sc = SparkContext(conf=conf)
     l1_weight = 4
     l2_weight = 0

@@ -260,5 +260,5 @@ if __name__=="__main__":
     for j in range(1,n+1,2):
         x[j - 1] = - 1.2
         x[j + 1 - 1] = 1.0
-
+    
     lbfgs_instance.lbfgs(x,test_func)
