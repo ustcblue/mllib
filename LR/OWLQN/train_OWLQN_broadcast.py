@@ -91,6 +91,10 @@ class OWLQN_train:
         
         return grad_mat + self.l2_weight * x
 
+    def output(self, iter, x):
+
+        utils.output_weight(iter, self.feat_dict, x)
+
     def eval_func_for_train_set(self,x):
         
         weight_dict={}
@@ -100,7 +104,7 @@ class OWLQN_train:
             idx = self.feat_dict[feat]
             if x[idx,0] != 0:
                 weight_dict[feat] = x[idx,0]
-
+        
         #broadcast the feature weight and calculate the gradient distributely
         broadcast_feat = self.sc.broadcast(weight_dict)
 
@@ -131,13 +135,14 @@ class OWLQN_train:
     def train(self):
 
         #self.load_ins_feat("hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/part-00051", \
-        self.load_ins_feat("hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/part-*", \
+        #self.load_ins_feat("hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/part-*", \
+        self.load_ins_feat("hdfs://hqz-ubuntu-master:9000/data/filtered_ins/train/part-00051",
                 "hdfs://hqz-ubuntu-master:9000/data/filtered_ins/eval/*", \
                 "hdfs://hqz-ubuntu-master:9000/data/filtered_feat/*")
 
         feat_num = len(self.feat_dict)
 
-        owlqn_instance = OWLQN(5,feat_num,self.l1_weight,self.eval_func_for_train_set,self.eval_func_for_test_set)
+        owlqn_instance = OWLQN(10,feat_num,self.l1_weight,self.eval_func_for_train_set,self.eval_func_for_test_set, self.output)
 
         owlqn_instance.owlqn(self.feat_weight)
 
@@ -146,7 +151,7 @@ if __name__ == "__main__":
     conf = SparkConf().setAppName("LR_OWLQN")
     conf.set('spark.kryoserializer.buffer.max','512')
     sc = SparkContext(conf=conf)
-    l1_weight = 4
-    l2_weight = 0
+    l1_weight = 0
+    l2_weight = 4
     owlqn = OWLQN_train(sc,l1_weight,l2_weight)
     owlqn.train()

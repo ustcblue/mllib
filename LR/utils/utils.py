@@ -117,6 +117,17 @@ def get_eval_stat(sorted_res):
     
     return [ auc, mae,loss ] 
 
+def output_weight(iter_idx, feat_dict, feat_weight):
+
+    weight_dict = {}
+    
+    for feat in feat_dict:
+        idx = feat_dict[feat]
+        if feat_weight[idx,0] != 0:
+            weight_dict[feat] = feat_weight[idx,0]
+    
+    output(iter_idx,None, weight_dict, None)
+
 def output(iter_idx, grad, feat_weight,eval_res):
 
     if grad != None:
@@ -129,19 +140,21 @@ def output(iter_idx, grad, feat_weight,eval_res):
 
         grad_file.close()
     
-    weight_file_name = "weight/weight_%d" % iter_idx
-    weight_file = open(weight_file_name,"w")
+    if feat_weight != None:
+        weight_file_name = "weight/weight_%d" % iter_idx
+        weight_file = open(weight_file_name,"w")
     
-    #feat_weight = feat_weight_dict.value
+        #feat_weight = feat_weight_dict.value
     
-    for f in feat_weight:
-        weight_file.write("%d\t%f\n"%(f,feat_weight[f]))
+        for f in feat_weight:
+            weight_file.write("%d\t%f\n"%(f,feat_weight[f]))
 
-    weight_file.close()
+        weight_file.close()
 
-    eval_file_name =  "weight/res_eval_%d" % iter_idx
-    eval_file = open(eval_file_name,"w")
+    if eval_res != None:
+        eval_file_name =  "weight/res_eval_%d" % iter_idx
+        eval_file = open(eval_file_name,"w")
 
-    for e in eval_res:
-        eval_file.write("%f\t%d\n" % (e[0],e[1]))
-    eval_file.close()
+        for e in eval_res:
+            eval_file.write("%f\t%d\n" % (e[0],e[1]))
+        eval_file.close()

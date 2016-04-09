@@ -28,6 +28,7 @@ class OWLQN:
     
     eval_func = None
     eval_func_for_test_set  = None
+    output_func = None
 
     x = None
     grad = None
@@ -40,7 +41,7 @@ class OWLQN:
     
     #@m : latest m updates
     #@n : dimension of the feature vector
-    def __init__(self,m,n,l1_weight,eval_func, eval_func_for_test_set = None, tol = None):
+    def __init__(self,m,n,l1_weight,eval_func, eval_func_for_test_set = None, output_func = None, tol = None):
         self.M = m
         self.N = n
         
@@ -55,6 +56,7 @@ class OWLQN:
         self.eval_func = eval_func
         
         self.eval_func_for_test_set  = eval_func_for_test_set
+        self.output_func = output_func
 
         self.x = scipy.mat([0]*n).T
         self.grad = scipy.mat([0]*n).T
@@ -233,6 +235,9 @@ class OWLQN:
             
             [ _term_criterion, msg ] = self.termCrit()
             self.lb1(msg, eval_mae, eval_auc)
+            
+            if self.output_func != None:
+                self.output_func(self.iter, self.x)
 
             if _term_criterion < self.tol:
                 print "optimization done..."
